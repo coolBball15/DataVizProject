@@ -22,13 +22,13 @@ def load_label_names():
     with open("data/meta", "rb") as file:
         meta = pickle.load(file, encoding="bytes")
         fine_label_names = [label.decode("utf-8") for label in meta[b'fine_label_names']]
-    return fine_label_names
+        coarse_label_names = [label.decode("utf-8") for label in meta[b'coarse_label_names']]
+    return fine_label_names, coarse_label_names
 
-fine_label_names = load_label_names()
+fine_label_names, coarse_label_names = load_label_names()
 print("oi")
 data_dict = unpickle("data/train")
 data, filenames, fine_labels, coarse_labels = pick_x(600)
-fine_label_names = load_label_names()
 # Specify the number of components to keep (you can adjust this as needed)
 num_components = 8
 
@@ -56,7 +56,7 @@ for i in range(len(coarse_labels)):
 
 a = 0
 b = 1
-labels = [(coarse_labels[i], fine_label_names[fine_labels[i]]) for i in range(len(coarse_labels))]
+labels = [(coarse_label_names[coarse_labels[i]], fine_label_names[fine_labels[i]]) for i in range(len(coarse_labels))]
 # Create a scatter plot of the PCA results
 fig = px.scatter(data_pca[:, a], data_pca[:, b], color=labels, color_discrete_map=colors)
 fig.update_layout(title='PCA of Image Data')
