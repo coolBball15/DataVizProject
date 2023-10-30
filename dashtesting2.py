@@ -31,26 +31,28 @@ pca = PCA(n_components=num_components)
 data_pca = pca.fit_transform(data)
 
 # Define a custom color mapping function
-def map_colors(label):
-    first_number = label[0]
-    hue = (label[1] % 10) * 36  # Adjust the hue range as needed
-    saturation = 50  # You can adjust the saturation as needed
+def map_colors_coarse(label):
+    hue = int((label / 20) * 360)
+    saturation = 100  # You can adjust the saturation as needed
     lightness = 50   # You can adjust the lightness as needed
     color = f'hsl({hue}, {saturation}%, {lightness}%)'  # Use HSL color format
     return color
 
 # Create a scatter plot with custom colors based on the tuple labels
-colors = [map_colors([coarse_labels[i], fine_labels[i]]) for i in range(len(coarse_labels))]
+#colors = [map_colors_coarse([coarse_labels[i], fine_labels[i]]) for i in range(len(coarse_labels))]
 colors = {}
 for i in range(len(coarse_labels)):
     if (coarse_labels[i], fine_labels[i]) not in colors.keys():
-        colors[(coarse_labels[i], fine_labels[i])] = map_colors([coarse_labels[i], fine_labels[i]])
+        colors[str(coarse_labels[i])] = map_colors_coarse(coarse_labels[i])
 
 a = 0
 b = 1
-labels = [(coarse_labels[i], fine_labels[i]) for i in range(len(coarse_labels))]
+
+#print(coarse_labels)
+#print(fine_labels)
 # Create a scatter plot of the PCA results
-fig = px.scatter(data_pca[:, a], data_pca[:, b], color=labels, color_discrete_map=colors)
+str_coarse = [str(item) for item in coarse_labels]
+fig = px.scatter(data_pca[:, a], data_pca[:, b], color=str_coarse, color_discrete_map=colors)
 fig.update_layout(title='PCA of Image Data')
 
 app = Dash(__name__)
