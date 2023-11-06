@@ -19,6 +19,15 @@ def pick_x(x):
     return data, filenames, fine_labels, coarse_labels
 
 data_dict = unpickle("data_pick/train")
+def load_label_names():
+    with open("data/meta", "rb") as file:
+        meta = pickle.load(file, encoding="bytes")
+        fine_label_names = [label.decode("utf-8") for label in meta[b'fine_label_names']]
+        coarse_label_names = [label.decode("utf-8") for label in meta[b'coarse_label_names']]
+    return fine_label_names, coarse_label_names
+
+fine_label_names, coarse_label_names = load_label_names()
+data_dict = unpickle("data/train")
 data, filenames, fine_labels, coarse_labels = pick_x(600)
 
 # Specify the number of components to keep (you can adjust this as needed)
@@ -54,6 +63,7 @@ b = 1
 str_coarse = [str(item) for item in coarse_labels]
 fig = px.scatter(data_pca[:, a], data_pca[:, b], color=str_coarse, color_discrete_map=colors)
 fig.update_layout(title='PCA of Image Data')
+fig.update_layout(showlegend=False)
 
 app = Dash(__name__)
 
@@ -76,6 +86,7 @@ app.layout = html.Div([
 
     ''', mathjax=True),
 
+    dcc.Checklist(coarse_label_names),
     dcc.Graph(mathjax=True, figure=fig)]
 )
 
