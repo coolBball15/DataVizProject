@@ -71,8 +71,15 @@ def plot_super_figure(data, coarse_labels, needed_coarse):
     a = 0
     b = 1
 
-    #print(coarse_labels)
-    #print(fine_labels)
+    # Fetch our ranges
+    # Fetch the x range
+    x_min = min(data_pca[:, a]) * 0.9
+    x_max = max(data_pca[:, a]) * 1.1
+
+    # Fetch the y range
+    y_min = min(data_pca[:, b]) * 0.9
+    y_max = max(data_pca[:, b]) * 1.1
+
     # Create a scatter plot of the PCA results
     str_coarse = [str(item) for item in coarse_labels]
     if len(data_pca) == 0:
@@ -81,6 +88,9 @@ def plot_super_figure(data, coarse_labels, needed_coarse):
         fig = px.scatter()
     else:
         fig = px.scatter(data_pca[:, a], data_pca[:, b], color=str_coarse, color_discrete_map=colors)
+
+    fig.update_layout(yaxis_range=[y_min,y_max])
+    fig.update_layout(xaxis_range=[x_min,x_max])
     fig.update_layout(title='PCA of Image Data')
     fig.update_layout(showlegend=False)
     return fig
@@ -119,7 +129,7 @@ app.layout = html.Div([
     dcc.Checklist(
         id = 'checklist',
         options = coarse_label_names,
-        value = []),
+        value = coarse_label_names),
 
     dcc.Graph(mathjax=True, figure=fig, id='super_figure')]
 )
