@@ -1,4 +1,5 @@
 from dash import Dash, dcc, html
+from dash.dependencies import Input, Output
 import plotly.express as px
 import pickle
 import numpy as np
@@ -29,42 +30,72 @@ fine_label_names, coarse_label_names = load_label_names()
 data_dict = unpickle("data/train")
 data, filenames, fine_labels, coarse_labels = pick_x(600)
 
-# Specify the number of components to keep (you can adjust this as needed)
-num_components = 2
+dic = {}
+for i in range(len(coarse_label_names)):
+    dic[coarse_label_names[i]] = i
 
-# Create a PCA object
-pca = PCA(n_components=num_components)
+def plot_super_figure(data, coarse_labels, needed_coarse):
+    print("plot super was called")
+    print(needed_coarse)
+    needed_labels = []
+    for coarse in needed_coarse:
+        needed_labels.append(dic[coarse])
+    # Specify the number of components to keep (you can adjust this as needed)
+    num_components = 2
 
-# Fit and transform the data
-data_pca = pca.fit_transform(data)
+    # Create a PCA object
+    pca = PCA(n_components=num_components)
 
-# Define a custom color mapping function
-def map_colors_coarse(label):
-    hue = int((label / 20) * 360)
-    saturation = 100  # You can adjust the saturation as needed
-    lightness = 50   # You can adjust the lightness as needed
-    color = f'hsl({hue}, {saturation}%, {lightness}%)'  # Use HSL color format
-    return color
+    # Fit and transform the data
+    data_pca = pca.fit_transform(data)
 
-# Create a scatter plot with custom colors based on the tuple labels
-#colors = [map_colors_coarse([coarse_labels[i], fine_labels[i]]) for i in range(len(coarse_labels))]
-colors = {}
-for i in range(len(coarse_labels)):
-    if (coarse_labels[i], fine_labels[i]) not in colors.keys():
-        colors[str(coarse_labels[i])] = map_colors_coarse(coarse_labels[i])
+    # Now we only want to fetch the data with a label in the needed_coarse
+    data_pca = np.array([data_pca[i] for i in range(len(data_pca)) if coarse_labels[i] in needed_labels])
+    coarse_labels = [coarse_labels[i] for i in range(len(coarse_labels)) if coarse_labels[i] in needed_labels]
 
-a = 0
-b = 1
+    # Define a custom color mapping function
+    def map_colors_coarse(label):
+        hue = int((label / 20) * 360)
+        saturation = 100  # You can adjust the saturation as needed
+        lightness = 50   # You can adjust the lightness as needed
+        color = f'hsl({hue}, {saturation}%, {lightness}%)'  # Use HSL color format
+        return color
 
-#print(coarse_labels)
-#print(fine_labels)
-# Create a scatter plot of the PCA results
-str_coarse = [str(item) for item in coarse_labels]
-fig = px.scatter(data_pca[:, a], data_pca[:, b], color=str_coarse, color_discrete_map=colors)
-fig.update_layout(title='PCA of Image Data')
-fig.update_layout(showlegend=False)
+    # Create a scatter plot with custom colors based on the tuple labels
+    #colors = [map_colors_coarse([coarse_labels[i], fine_labels[i]]) for i in range(len(coarse_labels))]
+    colors = {}
+    for i in range(len(coarse_labels)):
+        if (coarse_labels[i], fine_labels[i]) not in colors.keys():
+            colors[str(coarse_labels[i])] = map_colors_coarse(coarse_labels[i])
 
+    a = 0
+    b = 1
+
+    #print(coarse_labels)
+    #print(fine_labels)
+    # Create a scatter plot of the PCA results
+    str_coarse = [str(item) for item in coarse_labels]
+    if len(data_pca) == 0:
+        print("there was no data_pca")
+        # No data to show 
+        fig = px.scatter()
+    else:
+        fig = px.scatter(data_pca[:, a], data_pca[:, b], color=str_coarse, color_discrete_map=colors)
+    fig.update_layout(title='PCA of Image Data')
+    fig.update_layout(showlegend=False)
+    return fig
+
+fig = plot_super_figure(data, coarse_labels, coarse_label_names)
 app = Dash(__name__)
+
+@app.callback(
+    Output('super_figure', 'figure'),
+    [Input('checklist', 'value')]
+)
+def update_checklist_output(checked_values):
+    # Each checked value is now in the checked_values variable, we only want to plot data with superclas in these check_values
+    return plot_super_figure(data, coarse_labels, checked_values)
+
 
 app.layout = html.Div([
 
@@ -85,8 +116,12 @@ app.layout = html.Div([
 
     ''', mathjax=True),
 
-    dcc.Checklist(coarse_label_names),
-    dcc.Graph(mathjax=True, figure=fig)]
+    dcc.Checklist(
+        id = 'checklist',
+        options = coarse_label_names,
+        value = []),
+
+    dcc.Graph(mathjax=True, figure=fig, id='super_figure')]
 )
 
 if __name__ == '__main__':
