@@ -35,19 +35,28 @@ for i in range(len(coarse_label_names)):
     dic[coarse_label_names[i]] = i
 
 def plot_super_figure(data, coarse_labels, needed_coarse):
-    print("plot super was called")
-    print(needed_coarse)
     needed_labels = []
     for coarse in needed_coarse:
         needed_labels.append(dic[coarse])
     # Specify the number of components to keep (you can adjust this as needed)
-    num_components = 2
+    num_components = 3
+    a = 0
+    b = 1
 
     # Create a PCA object
     pca = PCA(n_components=num_components)
 
     # Fit and transform the data
     data_pca = pca.fit_transform(data)
+
+    # Fetch our ranges
+    # Fetch the x range
+    x_min = min(data_pca[:, a]) * 0.9
+    x_max = max(data_pca[:, a]) * 1.1
+
+    # Fetch the y range
+    y_min = min(data_pca[:, b]) * 0.9
+    y_max = max(data_pca[:, b]) * 1.1
 
     # Now we only want to fetch the data with a label in the needed_coarse
     data_pca = np.array([data_pca[i] for i in range(len(data_pca)) if coarse_labels[i] in needed_labels])
@@ -68,26 +77,13 @@ def plot_super_figure(data, coarse_labels, needed_coarse):
         if (coarse_labels[i], fine_labels[i]) not in colors.keys():
             colors[str(coarse_labels[i])] = map_colors_coarse(coarse_labels[i])
 
-    a = 0
-    b = 1
-
-    # Fetch our ranges
-    # Fetch the x range
-    x_min = min(data_pca[:, a]) * 0.9
-    x_max = max(data_pca[:, a]) * 1.1
-
-    # Fetch the y range
-    y_min = min(data_pca[:, b]) * 0.9
-    y_max = max(data_pca[:, b]) * 1.1
-
     # Create a scatter plot of the PCA results
     str_coarse = [str(item) for item in coarse_labels]
     if len(data_pca) == 0:
-        print("there was no data_pca")
         # No data to show 
         fig = px.scatter()
     else:
-        fig = px.scatter(data_pca[:, a], data_pca[:, b], color=str_coarse, color_discrete_map=colors)
+        fig = px.scatter(x = data_pca[:, a], y = data_pca[:, b], color=str_coarse, color_discrete_map=colors)
 
     fig.update_layout(yaxis_range=[y_min,y_max])
     fig.update_layout(xaxis_range=[x_min,x_max])
