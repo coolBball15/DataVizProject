@@ -18,7 +18,6 @@ def pick_x(x):
     data = data_dict[b'data'][:x]
     return data, filenames, fine_labels, coarse_labels
 
-data_dict = unpickle("data_pick/train")
 def load_label_names():
     with open("data/meta", "rb") as file:
         meta = pickle.load(file, encoding="bytes")
