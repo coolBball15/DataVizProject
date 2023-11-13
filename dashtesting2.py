@@ -151,7 +151,7 @@ def plot_sub_figure(data, for_coarse_label_name, coarse_labels, fine_labels):
     else:
         sub_fig = px.scatter(x = data_pca[:, a], y = data_pca[:, b], color=str_coarse, color_discrete_map=colors)
 
-
+    sub_fig.update_layout(legend_title_text='Subclass')
     sub_fig.update_layout(yaxis_range=[y_min,y_max])
     sub_fig.update_layout(xaxis_range=[x_min,x_max])
     sub_fig.update_layout(title='PCA of Image Data')
