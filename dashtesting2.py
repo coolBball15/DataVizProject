@@ -141,16 +141,21 @@ def plot_sub_figure(data, for_coarse_label_name, coarse_labels, fine_labels):
 
     # Create a scatter plot of the PCA results
     str_coarse = [str(item) for item in fine_labels]
+    for i,item in enumerate(str_coarse):
+        str_coarse[i] = fine_label_names[int(item)]
+    print(fine_label_names)
+    print(str_coarse)
     if len(data_pca) == 0:
         # No data to show 
-        fig = px.scatter()
+        sub_fig = px.scatter()
     else:
-        fig = px.scatter(x = data_pca[:, a], y = data_pca[:, b], color=str_coarse, color_discrete_map=colors)
+        sub_fig = px.scatter(x = data_pca[:, a], y = data_pca[:, b], color=str_coarse, color_discrete_map=colors)
 
-    fig.update_layout(yaxis_range=[y_min,y_max])
-    fig.update_layout(xaxis_range=[x_min,x_max])
-    fig.update_layout(title='PCA of Image Data')
-    return fig
+
+    sub_fig.update_layout(yaxis_range=[y_min,y_max])
+    sub_fig.update_layout(xaxis_range=[x_min,x_max])
+    sub_fig.update_layout(title='PCA of Image Data')
+    return sub_fig
 
 fig = plot_super_figure(data, coarse_labels, coarse_label_names)
 sub_fig = plot_sub_figure(data, coarse_label_names[0], coarse_labels, fine_labels)
@@ -192,12 +197,17 @@ app.layout = html.Div([
 
     ''', mathjax=True),
 
-    dcc.Checklist(
-        id = 'checklist',
-        options = coarse_label_names,
-        value = coarse_label_names),
+    html.Div([
+        dcc.Checklist(
+            id='checklist',
+            options=coarse_label_names,
+            value=coarse_label_names
+        )
+    ], style={'width': '30%', 'display': 'inline-block'}),
 
-    dcc.Graph(mathjax=True, figure=fig, id='super_figure'),
+    html.Div([
+        dcc.Graph(mathjax=True, figure=fig, id='super_figure')
+    ], style={'width': '50%', 'display': 'inline-block','height': '100%'}),
 
     dcc.Markdown('''## PCA for all data from one coarse-label'''),
 
