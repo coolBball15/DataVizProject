@@ -91,7 +91,69 @@ def plot_super_figure(data, coarse_labels, needed_coarse):
     fig.update_layout(showlegend=False)
     return fig
 
+def plot_sub_figure(data, for_coarse_label_name, coarse_labels, fine_labels):
+    # Specify the number of components to keep (you can adjust this as needed)
+    needed_labels = []
+    for_coarse_label = dic[for_coarse_label_name]
+
+    for i in range(len(coarse_labels)):
+        coarse = coarse_labels[i]
+
+        if coarse == for_coarse_label and fine_labels[i] not in  needed_labels:
+            needed_labels.append(fine_labels[i])
+
+    num_components = 3
+    a = 0
+    b = 1
+
+    # Create a PCA object
+    pca = PCA(n_components=num_components)
+
+    # Fit and transform the data
+    data_pca = pca.fit_transform(data)
+
+    # Fetch our ranges
+    # Fetch the x range
+    x_min = min(data_pca[:, a]) * 0.9
+    x_max = max(data_pca[:, a]) * 1.1
+
+    # Fetch the y range
+    y_min = min(data_pca[:, b]) * 0.9
+    y_max = max(data_pca[:, b]) * 1.1
+
+    # Now we only want to fetch the data with a label in the needed_coarse
+    data_pca = np.array([data_pca[i] for i in range(len(data_pca)) if fine_labels[i] in needed_labels])
+    fine_labels = [fine_labels[i] for i in range(len(fine_labels)) if fine_labels[i] in needed_labels]
+
+    # Define a custom color mapping function
+    def map_colors_fine(label, needed_labels):
+        label = needed_labels.index(label)
+        hue = int((label / 5) * 360)
+        saturation = 100  # You can adjust the saturation as needed
+        lightness = 50   # You can adjust the lightness as needed
+        color = f'hsl({hue}, {saturation}%, {lightness}%)'  # Use HSL color format
+        return color
+
+    colors = {}
+    for i in range(len(fine_labels)):
+        if (fine_labels[i], fine_labels[i]) not in colors.keys():
+            colors[str(fine_labels[i])] = map_colors_fine(fine_labels[i], needed_labels)
+
+    # Create a scatter plot of the PCA results
+    str_coarse = [str(item) for item in fine_labels]
+    if len(data_pca) == 0:
+        # No data to show 
+        fig = px.scatter()
+    else:
+        fig = px.scatter(x = data_pca[:, a], y = data_pca[:, b], color=str_coarse, color_discrete_map=colors)
+
+    fig.update_layout(yaxis_range=[y_min,y_max])
+    fig.update_layout(xaxis_range=[x_min,x_max])
+    fig.update_layout(title='PCA of Image Data')
+    return fig
+
 fig = plot_super_figure(data, coarse_labels, coarse_label_names)
+sub_fig = plot_sub_figure(data, coarse_label_names[0], coarse_labels, fine_labels)
 app = Dash(__name__)
 
 @app.callback(
@@ -101,6 +163,14 @@ app = Dash(__name__)
 def update_checklist_output(checked_values):
     # Each checked value is now in the checked_values variable, we only want to plot data with superclas in these check_values
     return plot_super_figure(data, coarse_labels, checked_values)
+
+
+@app.callback(
+    Output('sub_figure', 'figure'),
+    [Input('dropdown', 'value')]
+)
+def update_dropdown_output(selected_value):
+    return plot_sub_figure(data, selected_value, coarse_labels, fine_labels)
 
 
 app.layout = html.Div([
@@ -134,7 +204,9 @@ app.layout = html.Div([
     dcc.Dropdown(
         id = 'dropdown',
         options= coarse_label_names,
-        value= coarse_label_names[0])]
+        value= coarse_label_names[0]),
+
+    dcc.Graph(mathjax=True, figure=sub_fig, id='sub_figure')]
 )
 
 if __name__ == '__main__':
