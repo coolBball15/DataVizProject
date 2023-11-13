@@ -118,7 +118,7 @@ app.layout = html.Div([
     This example uses the inline delimiter:
     $E^2=m^2c^4+p^2c^2$
 
-    ## LaTeX in a Graph component:
+    ## PCA of all data based on coarse labels:
 
     ''', mathjax=True),
 
@@ -127,7 +127,14 @@ app.layout = html.Div([
         options = coarse_label_names,
         value = coarse_label_names),
 
-    dcc.Graph(mathjax=True, figure=fig, id='super_figure')]
+    dcc.Graph(mathjax=True, figure=fig, id='super_figure'),
+
+    dcc.Markdown('''## PCA for all data from one coarse-label'''),
+
+    dcc.Dropdown(
+        id = 'dropdown',
+        options= coarse_label_names,
+        value= coarse_label_names[0])]
 )
 
 if __name__ == '__main__':
