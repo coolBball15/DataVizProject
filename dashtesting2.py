@@ -203,23 +203,7 @@ fig.update_layout(clickmode='event+select')
 
 app.layout = html.Div([
 
-    dcc.Markdown('''
-    ## LaTeX in a Markdown component:
-
-    This example uses the block delimiter:
-    $$
-    \\frac{1}{(\\sqrt{\\phi \\sqrt{5}}-\\phi) e^{\\frac25 \\pi}} =
-    1+\\frac{e^{-2\\pi}} {1+\\frac{e^{-4\\pi}} {1+\\frac{e^{-6\\pi}}
-    {1+\\frac{e^{-8\\pi}} {1+\\ldots} } } }
-    $$
-
-    This example uses the inline delimiter:
-    $E^2=m^2c^4+p^2c^2$
-
-    ## PCA of all data based on coarse labels:
-
-    ''', mathjax=True),
-
+    dcc.Markdown('''## PCA of all data based on coarse labels:'''),
     html.Div([
         dcc.Checklist(
             id='checklist',
@@ -242,34 +226,47 @@ app.layout = html.Div([
     html.Div([
         dcc.Graph(mathjax=True, figure=sub_fig, id='sub_figure')
     ],style={'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center'}),
-    html.Img(
-        id = 'selected_image',
-        style={'width': '50%', 'display': 'block', 'margin': 'auto'},
-        src = ''
-    )
-    ]
+    # Add the fine label name as a title to the image
+
+    html.H1('Selected Image',style={'text-align': 'center', 'margin-top': '20px', 'margin-bottom': '10px'}),
+    html.H2(id='image_title', style={'text-align': 'center', 'margin-top': '10px'}),
+    html.Div([
+        html.Img(
+            id='selected_image',
+            style={'width': '40%', 'display': 'block', 'margin': 'auto'},
+            src=''
+        )
+        
+    ])]
 )
 
 @app.callback(
-    Output('selected_image', 'src'),
+    [Output('selected_image', 'src'),
+     Output('image_title', 'children')],
     Input('sub_figure', 'clickData'))
 def display_selected_image(clickData):
-    if clickData is None:
-        # If no point is clicked, return a placeholder or default image
-        return ''
+    if clickData is None or not clickData['points']:
+        # If no point is clicked, return a placeholder or default image and an empty title
+        return '', ''
 
-    # Extract the image from the clicked point data
     selected_index = int(clickData['points'][0]['hovertext'])
-    selected_image = data[selected_index].reshape((3,1024)).T.reshape(image_shape)
+    selected_image_data = data[selected_index]
+
+    # Reshape the flat array into a 3D array (height, width, channels)
+    image_shape = (32, 32, 3)  # Adjust the dimensions based on your actual image size and channels
+    selected_image_data = selected_image_data.reshape((3, 1024)).T.reshape(image_shape)
 
     # Convert NumPy array to image format
-    selected_img = Image.fromarray((selected_image).astype('uint8'))
+    selected_img = Image.fromarray((selected_image_data * 255).astype('uint8'))
     selected_img_byte_array = io.BytesIO()
     selected_img.save(selected_img_byte_array, format='PNG')
     selected_img_base64 = base64.b64encode(selected_img_byte_array.getvalue()).decode('utf-8')
 
-    # Return the base64-encoded image to update the 'src' attribute of the 'selected-image' component
-    return f'data:image/png;base64,{selected_img_base64}'
+    # Get the fine label name
+    fine_label_name = fine_label_names[int(fine_labels[selected_index])]
+
+    # Return the base64-encoded image and the fine label name as the title
+    return f'data:image/png;base64,{selected_img_base64}', fine_label_name
 
 if __name__ == '__main__':
     app.run(debug=True)
