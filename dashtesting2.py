@@ -32,7 +32,7 @@ def load_label_names():
 
 fine_label_names, coarse_label_names = load_label_names()
 data_dict = unpickle("data/train")
-data, filenames, fine_labels, coarse_labels = pick_x(600)
+data, filenames, fine_labels, coarse_labels = pick_x(6000)
 
 dic = {}
 for i in range(len(coarse_label_names)):
@@ -163,6 +163,7 @@ def plot_sub_figure(data, for_coarse_label_name, coarse_labels, fine_labels):
     sub_fig.update_layout(yaxis_range=[y_min,y_max])
     sub_fig.update_layout(xaxis_range=[x_min,x_max])
     sub_fig.update_layout(title='PCA of Image Data')
+    sub_fig.update_layout(height = 600,width = 600)
     return sub_fig
 
 fig = plot_super_figure(data, coarse_labels, coarse_label_names)
@@ -238,7 +239,9 @@ app.layout = html.Div([
         options= coarse_label_names,
         value= coarse_label_names[0]),
 
-    dcc.Graph(mathjax=True, figure=sub_fig, id='sub_figure'),
+    html.Div([
+        dcc.Graph(mathjax=True, figure=sub_fig, id='sub_figure')
+    ],style={'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center'}),
     html.Img(
         id = 'selected_image',
         style={'width': '50%', 'display': 'block', 'margin': 'auto'},
