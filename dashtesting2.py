@@ -163,7 +163,7 @@ def plot_sub_figure(data, for_coarse_label_name, coarse_labels, fine_labels):
     sub_fig.update_layout(yaxis_range=[y_min,y_max])
     sub_fig.update_layout(xaxis_range=[x_min,x_max])
     sub_fig.update_layout(title='PCA of Image Data')
-    sub_fig.update_layout(height = 600,width = 600)
+    sub_fig.update_layout(height = 600,width = 700)
     return sub_fig
 
 fig = plot_super_figure(data, coarse_labels, coarse_label_names)
@@ -233,7 +233,7 @@ app.layout = html.Div([
     html.Div([
         html.Img(
             id='selected_image',
-            style={'width': '40%', 'display': 'block', 'margin': 'auto'},
+            style={'width': '50%', 'display': 'block', 'margin': 'auto'},
             src=''
         )
         
