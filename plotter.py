@@ -42,29 +42,17 @@ def filter_data_by_labels(data, labels, selected_labels):
     filtered_labels = [labels[i] for i in range(len(labels)) if labels[i] in selected_labels]
     return filtered_data, filtered_labels
 
-'''def plot_pca(data, labels, factor = 0.1, label_mapping, title, num_components=3):
-    pca = PCA(n_components=num_components)
-    data_pca = pca.fit_transform(data)
-    colors = map_colors(labels, label_mapping)
-    ranges = get_pca_ranges(data_pca, factor)
-    fig = px.scatter(x=data_pca[:, 0], y=data_pca[:, 1], color=labels, color_discrete_map=colors)
-    fig.update_layout(yaxis_range= [ranges['y_min'], ranges['y_max']])  # Adjust these values as needed
-    fig.update_layout(xaxis_range=[ranges['x_min'], ranges['x_max']])
-    fig.update_layout(title= title)
-    return fig'''
-
-#########################################################
-def generate_colors(label):
+def generate_colors(labels):
     """
-    Generate an HSL color representation based on the input label.
+    Generate HSL color representations based on the input labels.
 
     Parameters:
-    - label (int): The label for which to generate the color.
+    - labels (list): List of labels for which to generate colors.
 
     Returns:
-    - str: An HSL color representation in the format 'hsl(hue, saturation%, lightness%)'.
+    - dict: A dictionary mapping each label to its corresponding HSL color representation.
     """
-    return f'hsl({int((label / 20) * 360)}, 100%, 50%)'
+    return {str(label): f'hsl({int((label / 20) * 360)}, 100%, 50%)' for label in labels}
 
 def plot_pca_figure(data_pca, labels, color_mapping, title, show_legend=True):
     """
@@ -110,8 +98,7 @@ def plot_super_figure(data, coarse_labels, checked_labels, label_dic, title='PCA
     selected_labels = [label_dic[coarse_label] for coarse_label in checked_labels]
     data_pca = apply_pca(data)
     filtered_data, filtered_labels = filter_data_by_labels(data_pca, coarse_labels, selected_labels)
-    colors = generate_colors(filtered_labels)
-    color_mapping = map_colors(filtered_labels, colors)
+    color_mapping = generate_colors(filtered_labels)
     return plot_pca_figure(filtered_data, filtered_labels, color_mapping, title)
 
 
@@ -130,16 +117,16 @@ def plot_sub_figure(data, coarse_labels, fine_labels, checked_label, label_dic, 
     Returns:
     - plotly.graph_objects.Figure: The Plotly figure object.
     """
+    selected_labels = []
     selected_labels = [fine_labels[i] for i in range(len(coarse_labels)) if coarse_labels[i] == label_dic[checked_label] and fine_labels[i] not in selected_labels]
     data_pca = apply_pca(data)
     filtered_data, filtered_labels = filter_data_by_labels(data_pca, fine_labels, selected_labels)
-    colors = generate_colors(filtered_labels)
-    color_mapping = map_colors(filtered_labels, colors)
+    color_mapping = generate_colors(filtered_labels)
     return plot_pca_figure(filtered_data, filtered_labels, color_mapping, title, show_legend=False)
 
 
 #########################################################
-'''def plot_super_figure(data, coarse_labels, needed_coarse):
+def plot_super_figure(data, coarse_labels, needed_coarse):
     needed_labels = []
     for coarse in needed_coarse:
         needed_labels.append(dic[coarse])
@@ -265,4 +252,3 @@ def plot_sub_figure(data, for_coarse_label_name, coarse_labels, fine_labels):
     sub_fig.update_layout(xaxis_range=[x_min,x_max])
     sub_fig.update_layout(title='PCA of Image Data')
     return sub_fig
-'''
