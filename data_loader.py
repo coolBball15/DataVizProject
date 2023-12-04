@@ -43,5 +43,3 @@ def load_label_names(meta_file):
         fine_label_names = [label.decode("utf-8") for label in meta[b'fine_label_names']]
         coarse_label_names = [label.decode("utf-8") for label in meta[b'coarse_label_names']]
     return fine_label_names, coarse_label_names
-
-
