@@ -210,15 +210,10 @@ if __name__ == '__main__':
     y_test = keras.utils.to_categorical(y_test, 100)
 
     model = cifar100vgg(train=False)
-    #predicted_x = model.predict(x_test)
-    #residuals = (np.argmax(predicted_x,1)!=np.argmax(y_test,1))
-    #loss = sum(residuals)/len(residuals)
-    #print("the validation 0/1 loss is: ",loss)
-    print(model.model.summary())
-    #print(f'Layers: {model.model.layers}')
-    print([layer.name for layer in model.model.layers])
-    #print(keract.get_activations(model.model, x_test[0:5], layer_names='dense_1', nodes_to_evaluate=None, output_format='simple', nested=False, auto_compile=True))
-
+    predicted_x = model.predict(x_test)
+    residuals = (np.argmax(predicted_x,1)!=np.argmax(y_test,1))
+    loss = sum(residuals)/len(residuals)
+    print("the validation 0/1 loss is: ",loss)
 
 
 

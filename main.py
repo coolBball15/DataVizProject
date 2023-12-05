@@ -8,7 +8,7 @@ import numpy as np
 from data_loader import load_label_names
 import plotly.express as px
 
-data_points = 15
+data_points = 100
 
 model = cifar100vgg(train=False)
 
@@ -18,19 +18,14 @@ x_test = x_test.astype('float32')
 y_train = y_train.astype('int32')
 y_test = y_test.astype('int32')
 
-test_activations = get_layer_activations(model.model, 'dense_1', x_test[0:data_points])
-print(f'Activation shape: {test_activations.shape}')
+test_activations = get_layer_activations(model.model, 'activation_14', x_test[0:data_points])
 
 fine_label_names, coarse_label_names = load_label_names('data/meta')
 
 pca_data = pca_decomposition(test_activations)
 
 current_fine_labels = [fine_label_names[label[0]] for label in y_test[0:data_points]]
-print(f'Fine label names of the first 15 test images: {current_fine_labels}')
-print(f'PCA shape: {pca_data.shape}')
-
 fig = plot(pca_data, current_fine_labels)
-
 
 # To do: Show layer names in dropdown menu
 # To do: Show specific layer in second dropdown menu
@@ -53,10 +48,35 @@ app.layout = html.Div([
     html.Div([
         dcc.Graph(mathjax=True, figure=fig, id='plot')
     ], style={'width': '50%', 'display': 'inline-block','height': '100%'}),
+    html.Div(id='my-output'),
+    html.Div(id='my-output2'),
         
     ]
 )
+@app.callback(
+    Output('my-output', 'children'),
+    Input('dropdown', 'value')
+)
+def update_output_div(input_value):
+    return 'Output: {}'.format(input_value)
 
+@app.callback(
+    Output('plot', 'figure'),
+    Input('dropdown', 'value')
+)
+def update_output_div(input_value):
+    test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
+    pca_data = pca_decomposition(test_activations)
+    fig = plot(pca_data, current_fine_labels)
+    return fig
+
+@app.callback(
+    Output('my-output2', 'children'),
+    Input('dropdown', 'value')
+)
+def update_output_div(input_value):
+    test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
+    return 'Shape of activation: {}'.format(test_activations.shape)
 '''@app.callback(
     Output('super_figure', 'figure'),
     [Input('checklist', 'value')]
