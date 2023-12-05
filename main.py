@@ -1,11 +1,12 @@
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
-from plotter import pca_decomposition, plot
+from plotter import pca_decomposition, plot, get_image
 from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
 from cifar100vgg import cifar100vgg
 from keras.datasets import cifar100
 import numpy as np
 from data_loader import load_label_names
+
 import plotly.express as px
 
 data_points = 100
@@ -29,30 +30,47 @@ fig = plot(pca_data, current_fine_labels)
 
 # To do: Show layer names in dropdown menu
 # To do: Show specific layer in second dropdown menu
+# Show selected image on click, on the right side of the dahsboard
 
+#print(f'Shape of data: {x_test[0].shape}')
+#print(f'Label of data: {fine_label_names[y_test[0][0]]}')
+image = get_image(x_test[2])
 
 app = Dash(__name__)
 
 #fig.update_layout(clickmode='event+select')
 
 app.layout = html.Div([
-
     dcc.Markdown('''## PCA of all data based on coarse labels:'''),
 
     dcc.Dropdown(
-        id = 'dropdown',
-        options= get_all_layers(model.model),
-        value= get_all_layers(model.model)[0]
-        ),
+        id='dropdown',
+        options=get_all_layers(model.model),
+        value=get_all_layers(model.model)[0]
+    ),
 
     html.Div([
-        dcc.Graph(mathjax=True, figure=fig, id='plot')
-    ], style={'width': '50%', 'display': 'inline-block','height': '100%'}),
+        # Graph Div
+        html.Div([
+            dcc.Graph(mathjax=True, figure=fig, id='plot')
+        ], style={'width': '50%', 'display': 'inline-block', 'height': '100%'}),
+
+        # Image Div
+        html.Div([
+            html.H1('Selected Image', style={'text-align': 'center', 'margin-top': '20px', 'margin-bottom': '10px'}),
+            html.H2(id='image_title', style={'text-align': 'center', 'margin-top': '10px'}),
+            html.Img(
+                id='selected_image',
+                style={'width': '30%', 'display': 'block', 'margin': 'auto'},
+                src=''
+            ),
+        ], style={'width': '50%', 'display': 'inline-block', 'height': '100%'}),
+    ], style={'width': '100%', 'display': 'flex'}),
+
     html.Div(id='my-output'),
     html.Div(id='my-output2'),
-        
-    ]
-)
+])
+
 @app.callback(
     Output('my-output', 'children'),
     Input('dropdown', 'value')
@@ -77,6 +95,25 @@ def update_output_div(input_value):
 def update_output_div(input_value):
     test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
     return 'Shape of activation: {}'.format(test_activations.shape)
+
+@app.callback(
+    [Output('selected_image', 'src'),
+     Output('image_title', 'children')],
+    Input('plot', 'clickData'))
+def display_selected_image(clickData):
+    if clickData is None:
+        # If no point is clicked, return a placeholder or default image
+        return image, 'Image: '
+    # Extract the image from the clicked point data
+    selected_index = int(clickData['points'][0]['hovertext'])
+    selected_image = x_test[selected_index]
+    selected_label = y_test[selected_index]
+    # Convert NumPy array to image format
+    selected_img = get_image(selected_image)
+    return selected_img, f'Image: {fine_label_names[selected_label[0]]}'
+
+
+
 '''@app.callback(
     Output('super_figure', 'figure'),
     [Input('checklist', 'value')]
@@ -93,10 +130,10 @@ def update_checklist_output(checked_values):
 
 def update_dropdown_output(selected_value):
     return plot_sub_figure(data, coarse_labels, fine_labels, selected_value, coarse_name_dict)
-
 @app.callback(
     Output('selected_image', 'src'),
     Input('sub_figure', 'clickData'))
+
 def display_selected_image(clickData):
     if clickData is None:
         # If no point is clicked, return a placeholder or default image
@@ -113,7 +150,8 @@ def display_selected_image(clickData):
     selected_img_base64 = base64.b64encode(selected_img_byte_array.getvalue()).decode('utf-8')
 
     # Return the base64-encoded image to update the 'src' attribute of the 'selected-image' component
-    return f'data:image/png;base64,{selected_img_base64}'''
+    return 
+'''
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,6 +1,10 @@
 import plotly.express as px
 import numpy as np
 from sklearn.decomposition import PCA
+from PIL import Image
+import base64
+import io
+from io import BytesIO
 
 def pca_decomposition(activations):
     """Return the pca decomposition of the activations."""
@@ -16,7 +20,7 @@ def pca_decomposition(activations):
 
 
     pca = PCA(n_components=2)
-    pca_transform = pca.fit_transform(standardized_data)
+    pca_transform = pca.fit_transform(data_2d)
     return pca_transform
 
 def plot(pca_data, labels):
@@ -31,7 +35,18 @@ def plot(pca_data, labels):
     fig = px.scatter(
         x=pca_data[:, 0],
         y=pca_data[:, 1], 
-        color=labels 
+        color=labels,
+        hover_name = [i for i in range(len(pca_data))]
         )
     return fig
+
+def get_image(image_data):
+# Convert NumPy array to image format
+    selected_img = Image.fromarray((image_data).astype('uint8'))
+    selected_img_byte_array = io.BytesIO()
+    selected_img.save(selected_img_byte_array, format='PNG')
+    selected_img_base64 = base64.b64encode(selected_img_byte_array.getvalue()).decode('utf-8')
+
+    # Return the base64-encoded image to update the 'src' attribute of the 'selected-image' component
+    return  f'data:image/png;base64,{selected_img_base64}'
 
