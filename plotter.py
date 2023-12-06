@@ -41,12 +41,19 @@ def plot(pca_data, labels):
     return fig
 
 def get_image(image_data):
-# Convert NumPy array to image format
+    """
+    Converts a NumPy array to a base64-encoded image in PNG format.
+
+    Parameters:
+    image_data (numpy.ndarray): The input image data as a NumPy array.
+
+    Returns:
+    str: The base64-encoded image in PNG format.
+    """
     selected_img = Image.fromarray((image_data).astype('uint8'))
     selected_img_byte_array = io.BytesIO()
     selected_img.save(selected_img_byte_array, format='PNG')
     selected_img_base64 = base64.b64encode(selected_img_byte_array.getvalue()).decode('utf-8')
 
-    # Return the base64-encoded image to update the 'src' attribute of the 'selected-image' component
-    return  f'data:image/png;base64,{selected_img_base64}'
+    return f'data:image/png;base64,{selected_img_base64}'
 

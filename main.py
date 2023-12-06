@@ -75,14 +75,23 @@ app.layout = html.Div([
     Output('my-output', 'children'),
     Input('dropdown', 'value')
 )
-def update_output_div(input_value):
+def print_layer(input_value):
     return 'Output: {}'.format(input_value)
 
 @app.callback(
     Output('plot', 'figure'),
     Input('dropdown', 'value')
 )
-def update_output_div(input_value):
+def plot_figure(input_value):
+    """
+    Plots a figure based on the input value.
+
+    Parameters:
+    input_value (int): The input value used to generate the figure.
+
+    Returns:
+    plotly.graph_objs._figure.Figure: The generated scatterplot figure.
+    """
     test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
     pca_data = pca_decomposition(test_activations)
     fig = plot(pca_data, current_fine_labels)
@@ -92,7 +101,7 @@ def update_output_div(input_value):
     Output('my-output2', 'children'),
     Input('dropdown', 'value')
 )
-def update_output_div(input_value):
+def print_activatio_shape(input_value):
     test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
     return 'Shape of activation: {}'.format(test_activations.shape)
 
@@ -101,6 +110,16 @@ def update_output_div(input_value):
      Output('image_title', 'children')],
     Input('plot', 'clickData'))
 def display_selected_image(clickData):
+    """
+    Displays the selected image based on the click data.
+
+    Parameters:
+    - clickData (dict): The click data containing information about the clicked point.
+
+    Returns:
+    - selected_img (PIL.Image.Image): The selected image in PIL Image format.
+    - label (str): The label of the selected image.
+    """
     if clickData is None:
         # If no point is clicked, return a placeholder or default image
         return image, 'Image: '
