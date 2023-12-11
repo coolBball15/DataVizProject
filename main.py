@@ -2,31 +2,34 @@ from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 from plotter import pca_decomposition, plot, get_image
 from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
-from cifar100vgg import cifar100vgg
-from keras.datasets import cifar100
 import numpy as np
-from data_loader import load_label_names
+from data_loader import  load_model,load_label_names, load_data
 
 import plotly.express as px
 
 data_points = 100
 
-model = cifar100vgg(train=False)
-
-(x_train, y_train), (x_test, y_test) = cifar100.load_data()
+current_model = 'cifar10'
+model = load_model(current_model)
+(x_train, y_train), (x_test, y_test) = load_data(model_name = current_model)
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 y_train = y_train.astype('int32')
 y_test = y_test.astype('int32')
 
-test_activations = get_layer_activations(model.model, 'activation_14', x_test[0:data_points])
+test_activations = get_layer_activations(model.model, 'dense_1', x_test[0:data_points])
 
-fine_label_names, coarse_label_names = load_label_names('data/meta')
+#fine_label_names, coarse_label_names = load_label_names(current_model)
 
 pca_data = pca_decomposition(test_activations)
 
-current_fine_labels = [fine_label_names[label[0]] for label in y_test[0:data_points]]
-fig = plot(pca_data, current_fine_labels)
+label_names = load_label_names(current_model)
+
+current_labels = [label_names[label[0]] for label in y_test[0:data_points]]
+
+#current_fine_labels = [fine_label_names[label[0]] for label in y_test[0:data_points]]
+
+fig = plot(pca_data, current_labels)
 
 # To do: Show layer names in dropdown menu
 # To do: Show specific layer in second dropdown menu
@@ -94,7 +97,7 @@ def plot_figure(input_value):
     """
     test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
     pca_data = pca_decomposition(test_activations)
-    fig = plot(pca_data, current_fine_labels)
+    fig = plot(pca_data, current_labels)
     return fig
 
 @app.callback(
@@ -129,7 +132,7 @@ def display_selected_image(clickData):
     selected_label = y_test[selected_index]
     # Convert NumPy array to image format
     selected_img = get_image(selected_image)
-    return selected_img, f'Image: {fine_label_names[selected_label[0]]}'
+    return selected_img, f'Image: {label_names[selected_label[0]]}'
 
 
 

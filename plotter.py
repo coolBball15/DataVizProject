@@ -20,7 +20,7 @@ def pca_decomposition(activations):
 
 
     pca = PCA(n_components=2)
-    pca_transform = pca.fit_transform(data_2d)
+    pca_transform = pca.fit_transform(standardized_data)
     return pca_transform
 
 def plot(pca_data, labels):
