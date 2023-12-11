@@ -139,7 +139,8 @@ def display_selected_image(clickData):
 
     # Convert NumPy array to image format
     selected_img = get_image(selected_image)
-    selected_img_LIME = get_image_LIME(selected_image)
+    selected_img_LIME = get_image(get_image_LIME(selected_image))
+    
     return selected_img, selected_img_LIME, f'Image: {fine_label_names[selected_label[0]]}'
 
 
