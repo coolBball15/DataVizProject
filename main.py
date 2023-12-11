@@ -2,6 +2,7 @@ from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 from plotter import pca_decomposition, plot, get_image
 from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
+from lime_plotter import get_image_LIME
 from cifar100vgg import cifar100vgg
 from keras.datasets import cifar100
 import numpy as np
@@ -61,7 +62,12 @@ app.layout = html.Div([
             html.H2(id='image_title', style={'text-align': 'center', 'margin-top': '10px'}),
             html.Img(
                 id='selected_image',
-                style={'width': '30%', 'display': 'block', 'margin': 'auto'},
+                style={'width': '50%', 'display': 'inline-block', 'margin': 'auto'},
+                src=''
+            ),
+            html.Img(
+                id='selected_image_LIME',
+                style={'width': '50%', 'display': 'inline-block', 'margin': 'auto'},
                 src=''
             ),
         ], style={'width': '50%', 'display': 'inline-block', 'height': '100%'}),
@@ -107,6 +113,7 @@ def print_activatio_shape(input_value):
 
 @app.callback(
     [Output('selected_image', 'src'),
+     Output('selected_image_LIME', 'src'),
      Output('image_title', 'children')],
     Input('plot', 'clickData'))
 def display_selected_image(clickData):
@@ -127,9 +134,13 @@ def display_selected_image(clickData):
     selected_index = int(clickData['points'][0]['hovertext'])
     selected_image = x_test[selected_index]
     selected_label = y_test[selected_index]
+
+
+
     # Convert NumPy array to image format
     selected_img = get_image(selected_image)
-    return selected_img, f'Image: {fine_label_names[selected_label[0]]}'
+    selected_img_LIME = get_image_LIME(selected_image)
+    return selected_img, selected_img_LIME, f'Image: {fine_label_names[selected_label[0]]}'
 
 
 
