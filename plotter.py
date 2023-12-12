@@ -6,7 +6,7 @@ import base64
 import io
 from io import BytesIO
 from lime import lime_image
-from tensorflow.keras.preprocessing import image
+from tensorflow.keras.preprocessing import image    
 from tensorflow.keras.applications.vgg16 import preprocess_input
 from skimage.segmentation import mark_boundaries
 
