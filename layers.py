@@ -1,11 +1,8 @@
 import re
-#from cifar100vgg import cifar100vgg
 import keract
-from keras.datasets import cifar100
 from sklearn.decomposition import PCA
 import numpy as np
 import matplotlib.pyplot as plt
-#from data_loader import load_cifar100_label_names
 import plotly.express as px
 
 def get_all_layers(model) -> list:
