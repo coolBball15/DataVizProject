@@ -4,7 +4,7 @@ from plotter import pca_decomposition, plot, get_image, get_LIME_image
 from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
 import numpy as np
 from data_loader import  load_model,load_label_names, load_data
-from prediction import predict_image_class
+from predicter import predict_image_class
 
 import plotly.express as px
 
