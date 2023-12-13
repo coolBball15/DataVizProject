@@ -4,7 +4,8 @@ from plotter import pca_decomposition, plot, get_image, get_LIME_image
 from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
 import numpy as np
 from data_loader import  load_model,load_label_names, load_data
-from predicter import predict_image_class
+from predicter import gen_prod_figure, predict_image_class
+import plotly.graph_objects as go
 
 import plotly.express as px
 
@@ -14,7 +15,7 @@ current_model = 'cifar10'
 model = load_model(current_model)
 (x_train, y_train), (x_test, y_test) = load_data(model_name = current_model)
 
-print(f'Prueba funcion image_class: {predict_image_class(model, x_test[0]).shape}')
+#print(f'Prueba funcion image_class: {predict_image_class(model, x_test[0]).shape}')
 
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
@@ -62,7 +63,7 @@ app.layout = html.Div([
             dcc.Graph(mathjax=True, figure=fig, id='plot')
         ], style={'width': '50%', 'display': 'inline-block', 'height': '100%'}),
 
-                # Image and Prediction Div
+        # Image and Prediction Div
         html.Div([
             # Image Div
             html.Div([
@@ -76,7 +77,10 @@ app.layout = html.Div([
             ], style={'width': '100%', 'display': 'inline-block', 'text-align': 'center'}),
 
             # Prediction Probability Div
-            html.Div(id='prediction_probability', style={'text-align': 'center', 'margin-top': '20px'}),
+            html.Div([
+                html.H2(id='prediction_probability', style={'text-align': 'center', 'margin-top': '20px'}),
+                dcc.Graph(id='prob_figure'),  # Add this line for the 'prob_figure'
+            ], style={'width': '100%', 'display': 'inline-block', 'text-align': 'center'}),
         ], style={'width': '50%', 'display': 'inline-block', 'height': '100%', 'text-align': 'center'}),
     ], style={'width': '100%', 'display': 'flex'}),
 ])
@@ -143,20 +147,21 @@ def display_selected_image(clickData):
     return selected_img, f'Image: {label_names[selected_label[0]]}'
 
 @app.callback(
-    Output('prediction_probability', 'children'),
+    [Output('prediction_probability', 'children'),
+    Output('prob_figure', 'figure')],
     Input('plot', 'clickData'),
     )
 def display_prediction_probability(clickData):
 
     if clickData is None:
-        # If no point is clicked, return a placeholder or default image
-        return 'No image selected'
+        return 'No image selected', gen_prod_figure(0)
     selected_index = int(clickData['points'][0]['hovertext'])
     selected_image = x_test[selected_index]
     selected_label = y_test[selected_index]
-    pred = predict_image_class(model, selected_image)
+    pred,pred_dict = predict_image_class(model, selected_image)
+    prob_figure = gen_prod_figure(pred_dict)
     label = label_names[pred[0]]
-    return f'Predicted label: {label}'
+    return f'Predicted label: {label}',prob_figure
 '''
 @app.callback(
     Output('my-output', 'children'),
