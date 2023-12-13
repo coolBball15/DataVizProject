@@ -152,13 +152,11 @@ def display_selected_image(clickData):
     selected_image = x_test[selected_index]
     selected_label = y_test[selected_index]
 
-
-
     # Convert NumPy array to image format
     selected_img = get_image(selected_image)
-    selected_img_LIME = get_image(get_image_LIME(selected_image))
+    selected_img_LIME = get_image(get_image_LIME(model, selected_image))
     
-    return selected_img, selected_img_LIME, f'Image: {fine_label_names[selected_label[0]]}'
+    return selected_img, selected_img_LIME, f'Image: {label_names[selected_label[0]]}'
 
 @app.callback(
     [Output('prediction_probability', 'children'),

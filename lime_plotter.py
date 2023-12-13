@@ -100,16 +100,14 @@ def build_model(weight_decay,x_shape,num_classes):
     model.add(Activation('softmax'))
     return model
 
-def get_image_LIME(img):
-    model = build_model(0.0005,[32,32,3],100)
-    model.load_weights("cifar100vgg.h5")
+def get_image_LIME(model, img):
 
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)
 
-    #predictions = model.predict(img_array)
-    #best = np.argmax(predictions[0])
+    predictions = model.predict(img_array)
+    best = np.argmax(predictions[0])
 
     # Create a LIME explainer
     explainer = lime_image.LimeImageExplainer()
@@ -117,7 +115,7 @@ def get_image_LIME(img):
     # Define a predict function for the model
     def predict_function(images):
         images = preprocess_input(images)
-        return model.predict(images)
+        return model.predict(images, normalize=True, batch_size=1)
 
     # Explain the prediction for the image using LIME
     explanation = explainer.explain_instance(img_array[0], predict_function, top_labels=3, num_features=5)
