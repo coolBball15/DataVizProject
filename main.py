@@ -1,33 +1,43 @@
 from dash import Dash, dcc, html
-from dash.dependencies import Input, Output
-from plotter import pca_decomposition, plot, get_image
+from dash.dependencies import Input, Output, State
+from plotter import pca_decomposition, plot, get_image, get_LIME_image
 from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
 from lime_plotter import get_image_LIME
 from cifar100vgg import cifar100vgg
 from keras.datasets import cifar100
 import numpy as np
-from data_loader import load_label_names
+from data_loader import  load_model,load_label_names, load_data
+from predicter import gen_prod_figure, predict_image_class
+import plotly.graph_objects as go
 
 import plotly.express as px
 
 data_points = 100
 
-model = cifar100vgg(train=False)
+current_model = 'cifar10'
+model = load_model(current_model)
+(x_train, y_train), (x_test, y_test) = load_data(model_name = current_model)
 
-(x_train, y_train), (x_test, y_test) = cifar100.load_data()
+#print(f'Prueba funcion image_class: {predict_image_class(model, x_test[0]).shape}')
+
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 y_train = y_train.astype('int32')
 y_test = y_test.astype('int32')
 
-test_activations = get_layer_activations(model.model, 'activation_14', x_test[0:data_points])
+test_activations = get_layer_activations(model.model, 'dense_1', x_test[0:data_points])
 
-fine_label_names, coarse_label_names = load_label_names('data/meta')
+#fine_label_names, coarse_label_names = load_label_names(current_model)
 
 pca_data = pca_decomposition(test_activations)
 
-current_fine_labels = [fine_label_names[label[0]] for label in y_test[0:data_points]]
-fig = plot(pca_data, current_fine_labels)
+label_names = load_label_names(current_model)
+
+current_labels = [label_names[label[0]] for label in y_test[0:data_points]]
+
+#current_fine_labels = [fine_label_names[label[0]] for label in y_test[0:data_points]]
+
+fig = plot(pca_data, current_labels)
 
 # To do: Show layer names in dropdown menu
 # To do: Show specific layer in second dropdown menu
@@ -35,7 +45,7 @@ fig = plot(pca_data, current_fine_labels)
 
 #print(f'Shape of data: {x_test[0].shape}')
 #print(f'Label of data: {fine_label_names[y_test[0][0]]}')
-image = get_image(x_test[2])
+image = ''#get_image(x_test[2])
 
 app = Dash(__name__)
 
@@ -56,33 +66,45 @@ app.layout = html.Div([
             dcc.Graph(mathjax=True, figure=fig, id='plot')
         ], style={'width': '50%', 'display': 'inline-block', 'height': '100%'}),
 
-        # Image Div
+        # Image and Prediction Div
         html.Div([
-            html.H1('Selected Image', style={'text-align': 'center', 'margin-top': '20px', 'margin-bottom': '10px'}),
-            html.H2(id='image_title', style={'text-align': 'center', 'margin-top': '10px'}),
-            html.Img(
-                id='selected_image',
-                style={'width': '50%', 'display': 'inline-block', 'margin': 'auto'},
-                src=''
-            ),
-            html.Img(
-                id='selected_image_LIME',
-                style={'width': '50%', 'display': 'inline-block', 'margin': 'auto'},
-                src=''
-            ),
-        ], style={'width': '50%', 'display': 'inline-block', 'height': '100%'}),
+            # Image Div
+            html.Div([
+                html.H1('Selected Image', style={'text-align': 'center', 'margin-top': '20px', 'margin-bottom': '10px'}),
+                html.H2(id='image_title', style={'text-align': 'center', 'margin-top': '10px'}),
+                html.Img(
+                    id='selected_image',
+                    style={'width': '50%', 'display': 'inline-block', 'margin': 'auto'},
+                    src=''
+                ),
+                html.Img(
+                    id='selected_image_LIME',
+                    style={'width': '50%', 'display': 'inline-block', 'margin': 'auto'},
+                    src=''
+                ),
+            ], style={'width': '100%', 'display': 'inline-block', 'text-align': 'center'}),
+
+            # Prediction Probability Div
+            html.Div([
+                html.H2(id='prediction_probability', style={'text-align': 'center', 'margin-top': '20px'}),
+                dcc.Graph(id='prob_figure'),  # Add this line for the 'prob_figure'
+            ], style={'width': '100%', 'display': 'inline-block', 'text-align': 'center'}),
+        ], style={'width': '50%', 'display': 'inline-block', 'height': '100%', 'text-align': 'center'}),
     ], style={'width': '100%', 'display': 'flex'}),
-
-    html.Div(id='my-output'),
-    html.Div(id='my-output2'),
 ])
+'''     html.Div([
+        html.Button('Generate LIME explanation', id='generate_button', n_clicks=0),
+        html.Img(
+            id='lime_explanation',
+            style={'width': '30%', 'display': 'block', 'margin': 'auto'},
+            src=''
+        ),
+    #], style={'width': '100%', 'display': 'flex'}),
+    html.Div(id='number_of_clicks',children=''),
+    html.Div(id='my-output'),
+    html.Div(id='my-output2'),'''
 
-@app.callback(
-    Output('my-output', 'children'),
-    Input('dropdown', 'value')
-)
-def print_layer(input_value):
-    return 'Output: {}'.format(input_value)
+
 
 @app.callback(
     Output('plot', 'figure'),
@@ -100,22 +122,17 @@ def plot_figure(input_value):
     """
     test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
     pca_data = pca_decomposition(test_activations)
-    fig = plot(pca_data, current_fine_labels)
+    fig = plot(pca_data, current_labels)
     return fig
 
-@app.callback(
-    Output('my-output2', 'children'),
-    Input('dropdown', 'value')
-)
-def print_activatio_shape(input_value):
-    test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
-    return 'Shape of activation: {}'.format(test_activations.shape)
+
 
 @app.callback(
     [Output('selected_image', 'src'),
      Output('selected_image_LIME', 'src'),
      Output('image_title', 'children')],
-    Input('plot', 'clickData'))
+    Input('plot', 'clickData'),
+    prevent_initial_call=True)
 def display_selected_image(clickData):
     """
     Displays the selected image based on the click data.
@@ -143,6 +160,55 @@ def display_selected_image(clickData):
     
     return selected_img, selected_img_LIME, f'Image: {fine_label_names[selected_label[0]]}'
 
+@app.callback(
+    [Output('prediction_probability', 'children'),
+    Output('prob_figure', 'figure')],
+    Input('plot', 'clickData'),
+    )
+def display_prediction_probability(clickData):
+
+    if clickData is None:
+        return 'No image selected', gen_prod_figure(0)
+    selected_index = int(clickData['points'][0]['hovertext'])
+    selected_image = x_test[selected_index]
+    selected_label = y_test[selected_index]
+    pred,pred_dict = predict_image_class(model, selected_image)
+    prob_figure = gen_prod_figure(pred_dict)
+    label = label_names[pred[0]]
+    return f'Predicted label: {label}',prob_figure
+'''
+@app.callback(
+    Output('my-output', 'children'),
+    Input('dropdown', 'value')
+)
+def print_layer(input_value):
+    return 'Output: {}'.format(input_value)
+
+@app.callback(
+    Output('my-output2', 'children'),
+    Input('dropdown', 'value')
+)
+def print_activatio_shape(input_value):
+    test_activations = get_layer_activations(model.model, input_value, x_test[0:data_points])
+    return 'Shape of activation: {}'.format(test_activations.shape)
+
+
+@app.callback(
+    Output('lime_explanation','src'),
+    Output('number_of_clicks', 'children'),
+    Input('generate_button', 'n_clicks'),
+    Input('plot', 'clickData'),
+    )
+def generate_lime_explanation(n_clicks, clickData):
+    selected_index = int(clickData['points'][0]['hovertext'])
+    selected_image = x_test[selected_index]
+    selected_label = y_test[selected_index]
+    print(f'Shape of image: {selected_image.shape}')
+    print(f'Number of clicks: {n_clicks}')
+    if clickData is None:
+        return '', f'Number of clicks{n_clicks}'
+    
+    return get_image(get_LIME_image(selected_image, model)), f'Number of clicks{n_clicks}'''
 
 
 '''@app.callback(
