@@ -4,10 +4,10 @@ import plotly.graph_objects as go
 
 from data_loader import load_label_names
 
-def predict_image_class(model, image):
+def predict_image_class(model, image, current_model):
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
-    label_names = load_label_names('cifar10')
+    label_names = load_label_names(current_model)
     # Predict the class
     prediction = model.predict(image, normalize=True, batch_size=1)
     top_indices = np.argsort(prediction[0])[-5:][::-1]
@@ -25,7 +25,7 @@ def predict_image_class(model, image):
     return class_index,ret_dict
 
 
-def gen_prod_figure(pred_dict):
+def gen_prod_figure(pred_dict,current_model):
     if pred_dict ==0:
         classes = ['', '', '', '', '']
         probabilities = [0, 0, 0, 0, 0] 
@@ -39,7 +39,8 @@ def gen_prod_figure(pred_dict):
         ))
 
         fig.update_layout(
-            title='Class Probabilities for CIFAR-10',
+            title_text=f'Class Probabilities for {current_model}',
+            title_x=0.5,
             xaxis=dict(title='Classes'),
             yaxis=dict(range=[0, 1]),
         )
@@ -62,7 +63,8 @@ def gen_prod_figure(pred_dict):
     ))
 
     fig.update_layout(
-        title='Class Probabilities for CIFAR-10',
+        title_text=f'Class Probabilities for {current_model}',
+        title_x=0.5,
         xaxis=dict(title='Classes'),
         yaxis=dict(title='Probability'),
     )

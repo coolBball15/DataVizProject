@@ -12,7 +12,7 @@ import plotly.express as px
 data_points = 100
 
 current_model = 'cifar10'
-model = load_model(current_model)
+model = load_model(current_model)   
 (x_train, y_train), (x_test, y_test) = load_data(model_name = current_model)
 
 #print(f'Prueba funcion image_class: {predict_image_class(model, x_test[0]).shape}')
@@ -154,14 +154,15 @@ def display_selected_image(clickData):
 def display_prediction_probability(clickData):
 
     if clickData is None:
-        return 'No image selected', gen_prod_figure(0)
+        return 'No image selected', gen_prod_figure(0,current_model)
     selected_index = int(clickData['points'][0]['hovertext'])
     selected_image = x_test[selected_index]
     selected_label = y_test[selected_index]
-    pred,pred_dict = predict_image_class(model, selected_image)
-    prob_figure = gen_prod_figure(pred_dict)
+    pred,pred_dict = predict_image_class(model, selected_image, current_model)
+    prob_figure = gen_prod_figure(pred_dict,current_model)
     label = label_names[pred[0]]
     return f'Predicted label: {label}',prob_figure
+
 '''
 @app.callback(
     Output('my-output', 'children'),
