@@ -70,8 +70,8 @@ app.layout = html.Div([
         html.Div([
             # Image Div
             html.Div([
-                html.H1('Selected Image', style={'text-align': 'center', 'margin-top': '20px', 'margin-bottom': '10px'}),
-                html.H2(id='image_title', style={'text-align': 'center', 'margin-top': '10px'}),
+                html.H1('Selected Image', style={'text-align': 'center', 'margin-top': '30px', 'margin-bottom': '20px'}),
+                html.H2(id='image_title', style={'text-align': 'center', 'margin-top': '20px', 'margin-bottom' : '10px'}),
                 html.Img(
                     id='selected_image',
                     style={'width': '50%', 'display': 'inline-block', 'margin': 'auto'},
@@ -84,6 +84,7 @@ app.layout = html.Div([
                 ),
             ], style={'width': '100%', 'display': 'inline-block', 'text-align': 'center'}),
 
+            html.Button('Lime explanation', id='button', style={'text-align': 'center', 'margin-bottom' : '10px'}),
             # Prediction Probability Div
             html.Div([
                 html.H2(id='prediction_probability', style={'text-align': 'center', 'margin-top': '20px'}),
@@ -129,7 +130,7 @@ def plot_figure(input_value):
 
 @app.callback(
     [Output('selected_image', 'src'),
-     Output('selected_image_LIME', 'src'),
+     #Output('selected_image_LIME', 'src'),
      Output('image_title', 'children')],
     Input('plot', 'clickData'),
     prevent_initial_call=True)
@@ -154,9 +155,22 @@ def display_selected_image(clickData):
 
     # Convert NumPy array to image format
     selected_img = get_image(selected_image)
-    selected_img_LIME = get_image(get_image_LIME(model, selected_image))
+    #selected_img_LIME = get_image(get_image_LIME(model, selected_image))
     
-    return selected_img, selected_img_LIME, f'Image: {label_names[selected_label[0]]}'
+    #return selected_img, selected_img_LIME, f'Image: {label_names[selected_label[0]]}'
+    return selected_img, f'Image: {label_names[selected_label[0]]}'
+
+@app.callback(
+    Output('selected_image_LIME', 'src'),
+    Input('button', 'n_clicks'),
+    State('plot', 'clickData'),
+    prevent_initial_call=True)
+def display_lime_image(n_clicks, clickData):
+    selected_index = int(clickData['points'][0]['hovertext'])
+    selected_image = x_test[selected_index]
+
+    selected_img_LIME = get_image(get_image_LIME(model, selected_image))
+    return selected_img_LIME
 
 @app.callback(
     [Output('prediction_probability', 'children'),
