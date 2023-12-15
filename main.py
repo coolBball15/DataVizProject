@@ -1,16 +1,13 @@
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output, State
 from plotter import pca_decomposition, plot, get_image, get_image_LIME
-from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
-import numpy as np
+from layers import get_layer_activations, get_all_layers
 from data_loader import  load_model,load_label_names, load_data
 from predicter import gen_prod_figure, predict_image_class
-import plotly.graph_objects as go
 import tensorflow as tf
 
-import plotly.express as px
 
-data_points = 1000
+data_points = 2000
 
 current_model = 'cifar10'
 model = load_model(current_model)   
@@ -28,14 +25,12 @@ loaded_data = {
 
 (x_train, y_train), (x_test, y_test) = loaded_data[current_model]
 
-#print(f'Prueba funcion image_class: {predict_image_class(model, x_test[0]).shape}')
-
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 y_train = y_train.astype('int32')
 y_test = y_test.astype('int32')
 
-test_activations = get_layer_activations(model.model, 'dense_1', x_test[0:data_points])
+test_activations = get_layer_activations(model.model, 'activation_14', x_test[0:data_points])
 
 # Dictionary to hold label names for each model
 model_label_names = {
@@ -90,7 +85,7 @@ app.layout = html.Div([
     dcc.Dropdown(
         id='dropdown',
         options=get_all_layers(model.model),
-        value=get_all_layers(model.model)[0]
+        value=get_all_layers(model.model)[-1]
     ),
 
     # Main Content Div
