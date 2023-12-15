@@ -15,7 +15,15 @@ from skimage.segmentation import mark_boundaries
 
 
 def pca_decomposition(activations):
-    """Return the pca decomposition of the activations."""
+    """
+    Perform PCA decomposition on the given activations.
+
+    Parameters:
+    activations (ndarray): The activations to be decomposed.
+
+    Returns:
+    ndarray: The PCA decomposition of the activations.
+    """
     # Reshape the 4D array into a 2D matrix
     num_samples = activations.shape[0]
     num_features = np.prod(activations.shape[1:])
@@ -25,14 +33,21 @@ def pca_decomposition(activations):
     mean = np.mean(data_2d, axis=0)
     std = np.std(data_2d, axis=0)
     standardized_data = (data_2d - mean) / std
-
 
     pca = PCA(n_components=2)
     pca_transform = pca.fit_transform(standardized_data)
     return pca_transform
 
 def tsne_decomposition(activations):
-    """Return the tsne decomposition of the activations."""
+    """
+    Perform t-SNE decomposition on the given activations.
+
+    Parameters:
+    activations (ndarray): The activations to be decomposed.
+
+    Returns:
+    ndarray: The t-SNE transformed data.
+    """
     # Reshape the 4D array into a 2D matrix
     num_samples = activations.shape[0]
     num_features = np.prod(activations.shape[1:])
@@ -42,7 +57,6 @@ def tsne_decomposition(activations):
     mean = np.mean(data_2d, axis=0)
     std = np.std(data_2d, axis=0)
     standardized_data = (data_2d - mean) / std
-
 
     tsne = TSNE(n_components=2)
     tsne_transform = tsne.fit_transform(standardized_data)
@@ -83,7 +97,16 @@ def get_image(image_data):
     return f'data:image/png;base64,{selected_img_base64}'
 
 def get_image_LIME(model, img):
+    """
+    Generates a LIME explanation for an image prediction using the given model.
 
+    Parameters:
+    - model: The trained model used for prediction.
+    - img: The input image.
+
+    Returns:
+    - img_boundry: The visualized LIME explanation for the image.
+    """
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = preprocess_input(img_array)

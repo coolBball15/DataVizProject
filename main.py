@@ -189,6 +189,17 @@ def display_selected_image(clickData, selected_model):
     Input('model_selection_dropdown', 'value')],
     )
 def display_prediction_probability(clickData, selected_model):
+    """
+    Displays the predicted label and probability figure for a selected image.
+
+    Parameters:
+    - clickData (dict): The click data containing information about the selected image.
+    - selected_model (str): The name of the selected model.
+
+    Returns:
+    - str: The predicted label.
+    - figure: The probability figure.
+    """
     model = all_models[selected_model] 
     (x_train, y_train), (x_test, y_test) = loaded_data[selected_model]
     if clickData is None:
@@ -206,6 +217,16 @@ def display_prediction_probability(clickData, selected_model):
     State('plot', 'clickData'),
     prevent_initial_call=True)
 def display_lime_image(n_clicks, clickData):
+    """
+    Displays the LIME image corresponding to the selected data point.
+
+    Parameters:
+    - n_clicks (int): The number of times the image has been clicked.
+    - clickData (dict): The data associated with the click event.
+
+    Returns:
+    - selected_img_LIME: The LIME image corresponding to the selected data point.
+    """
     selected_index = int(clickData['points'][0]['hovertext'])
     selected_image = x_test[selected_index]
 
