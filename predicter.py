@@ -5,6 +5,18 @@ import plotly.graph_objects as go
 from data_loader import load_label_names
 
 def predict_image_class(model, image, current_model):
+    """
+    Predicts the class of an image using a given model.
+
+    Parameters:
+    - model: The trained model used for prediction.
+    - image: The image to be classified.
+    - current_model: The current model being used.
+
+    Returns:
+    - class_index: The index of the predicted class.
+    - ret_dict: A dictionary containing the top 5 predicted labels and their corresponding probabilities.
+    """
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
     label_names = load_label_names(current_model)
@@ -22,13 +34,23 @@ def predict_image_class(model, image, current_model):
         ret_dict[top_labels[i]] = top_probabilities[i]
     class_index = np.argmax(prediction, axis=1)
 
-    return class_index,ret_dict
+    return class_index, ret_dict
 
 
-def gen_prod_figure(pred_dict,current_model):
-    if pred_dict ==0:
+def gen_prod_figure(pred_dict, current_model):
+    """
+    Generate a bar chart figure showing the class probabilities for a given prediction dictionary.
+
+    Parameters:
+    pred_dict (dict): A dictionary containing the class names as keys and their corresponding probabilities as values.
+    current_model (str): The name of the current model.
+
+    Returns:
+    fig (go.Figure): The generated bar chart figure.
+    """
+    if pred_dict == 0:
         classes = ['', '', '', '', '']
-        probabilities = [0, 0, 0, 0, 0] 
+        probabilities = [0, 0, 0, 0, 0]
 
         fig = go.Figure()
 
