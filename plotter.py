@@ -75,8 +75,12 @@ def plot(pca_data, labels):
         x=pca_data[:, 0],
         y=pca_data[:, 1], 
         color=labels,
-        hover_name = [i for i in range(len(pca_data))]
-        )
+        hover_name=[i for i in range(len(pca_data))],
+        labels={'x': 'PC1', 'y': 'PC2'}
+    )
+    fig.update_layout(
+        title_text='PCA Decomposition of activations',
+        title_x=0.5,)
     return fig
 
 def get_image(image_data):
