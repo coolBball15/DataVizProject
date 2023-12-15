@@ -6,6 +6,7 @@ import base64
 import io
 from io import BytesIO
 from lime import lime_image
+from sklearn.manifold import TSNE
 from tensorflow.keras.preprocessing import image    
 from tensorflow.keras.applications.vgg16 import preprocess_input
 from skimage.segmentation import mark_boundaries
@@ -29,6 +30,23 @@ def pca_decomposition(activations):
     pca = PCA(n_components=2)
     pca_transform = pca.fit_transform(standardized_data)
     return pca_transform
+
+def tsne_decomposition(activations):
+    """Return the tsne decomposition of the activations."""
+    # Reshape the 4D array into a 2D matrix
+    num_samples = activations.shape[0]
+    num_features = np.prod(activations.shape[1:])
+    data_2d = activations.reshape(num_samples, num_features)
+
+    # Standardize the data (optional but recommended for PCA)
+    mean = np.mean(data_2d, axis=0)
+    std = np.std(data_2d, axis=0)
+    standardized_data = (data_2d - mean) / std
+
+
+    tsne = TSNE(n_components=2)
+    tsne_transform = tsne.fit_transform(standardized_data)
+    return tsne_transform
 
 def plot(pca_data, labels):
     """
