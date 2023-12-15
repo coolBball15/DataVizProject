@@ -1,7 +1,7 @@
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output, State
 from plotter import pca_decomposition, plot, get_image, get_image_LIME
-from layers import get_layer_activations, get_layer_names, get_layer_count, get_all_layers
+from layers import get_layer_activations,get_all_layers
 import numpy as np
 from data_loader import  load_model,load_label_names, load_data
 from predicter import gen_prod_figure, predict_image_class
