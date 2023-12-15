@@ -7,7 +7,7 @@ from predicter import gen_prod_figure, predict_image_class
 import tensorflow as tf
 
 
-data_points = 2000
+data_points = 1200
 
 current_model = 'cifar10'
 model = load_model(current_model)   
